@@ -1,3 +1,6 @@
+
+#' @import ggplot2
+#' @import grid
 theme_larger <- function()
   theme_grey() +
   theme(axis.title.x=element_text(size=rel(2),vjust=-.65),
@@ -9,6 +12,8 @@ theme_larger <- function()
         axis.ticks.x = element_blank(),
         plot.title = element_text(size=24))
 
+#' @import ggplot2
+#' @import grid
 theme_presentation <- function() {
   theme_grey() +
   theme(axis.title.x=element_text(size=rel(3),vjust=-.5),
