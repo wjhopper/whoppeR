@@ -1,10 +1,10 @@
 Package: whoppeR
 Title: Assorted Utilities used by me, Will Hopper
 Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Authors@R: person("Will", "Hopper", email = "whopper@psych.umass.edu", role = c("aut", "cre"))
 Description: This package just holds stand alone functions, ggplot themes, and whatever else I want to take with me from place to place
 	 but doesn't fit well into a .Rprofile. 
-Depends: R (>= 3.2.1)
-Imports: ggplot2
+Depends: R (>= 3.0.0)
+Imports: ggplot2, grid
 License: CC0
 LazyData: true
