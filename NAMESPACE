@@ -2,5 +2,6 @@
 
 export(score)
 export(strSort)
+export(theme_larger)
 import(ggplot2)
 import(grid)

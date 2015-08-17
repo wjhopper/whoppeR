@@ -1,6 +1,7 @@
 
 #' @import ggplot2
 #' @import grid
+#' @export
 theme_larger <- function()
   theme_grey() +
   theme(axis.title.x=element_text(size=rel(2),vjust=-.65),
