@@ -1,6 +1,6 @@
 Package: whoppeR
 Title: Assorted Utilities used by me, Will Hopper
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: person("Will", "Hopper", email = "whopper@psych.umass.edu", role = c("aut", "cre"))
 Description: This package just holds stand alone functions, ggplot themes, and whatever else I want to take with me from place to place
 	 but doesn't fit well into a .Rprofile. 
