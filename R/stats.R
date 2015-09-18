@@ -44,5 +44,5 @@ meanBeta <- function(alpha, beta){
 #' @examples
 #' varBeta(alpha=.01, beta = 1)
 varBeta <- function(alpha, beta) {
-  return(alpha*beta/((alpha+beta)^2)*(alpha + beta + 1))
+  return((alpha*beta)/(((alpha+beta)^2)*(alpha + beta + 1)))
 }
