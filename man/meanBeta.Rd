@@ -22,4 +22,7 @@ Calculate the mean of a beta distribution given its two shape parameters
 \examples{
 meanBeta(alpha=.01, beta = 1)
 }
+\author{
+Will Hopper
+}
 
