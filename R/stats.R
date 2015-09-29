@@ -65,7 +65,7 @@ varBeta <- function(alpha, beta) {
 #' betaABfromMeanKappa(mean = .6, kappa=15)
 betaABfromMeanKappa = function( mean , kappa ) {
   if ( mean <=0 | mean >= 1) stop("must have 0 < mean < 1")
-  if ( kappa <=0 ) stop("kappa must be > 0")
+  if ( kappa < 0 ) stop("kappa must be > 0")
   a = mean * kappa
   b = ( 1.0 - mean ) * kappa
   return( list( a=a , b=b ) )
@@ -88,7 +88,7 @@ betaABfromMeanKappa = function( mean , kappa ) {
 #' betaABfromModeKappa(mode = .4, kappa=10)
 betaABfromModeKappa = function( mode , kappa ) {
   if ( any(mode <=0) || any(mode >= 1)) stop("must have 0 < mode < 1")
-  if ( any(kappa <=2) ) stop("kappa must be > 2 for mode parameterization")
+  if ( any(kappa <2) ) stop("kappa must be > 2 for mode parameterization")
   a = mode * ( kappa - 2 ) + 1
   b = ( 1.0 - mode ) * ( kappa - 2 ) + 1
   return( list( a=a , b=b ) )
@@ -113,7 +113,7 @@ betaABfromMeanSD = function( mean , sd ) {
   if (any(mean <=0) || any(mean >= 1)) stop("must have 0 < mean < 1")
   if ( any(sd <= 0 )) stop("sd must be > 0")
   kappa = mean*(1-mean)/sd^2 - 1
-  if ( any(kappa <= 0 )) stop("invalid combination of mean and sd")
+  if ( any(kappa < 0 )) stop("invalid combination of mean and sd")
   a = mean * kappa
   b = ( 1.0 - mean ) * kappa
   return( list( a=a , b=b ) )
