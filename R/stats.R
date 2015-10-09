@@ -112,7 +112,9 @@ betaABfromModeKappa = function( mode , kappa ) {
 betaABfromMeanSD = function( mean , sd ) {
   if (any(mean <=0) || any(mean >= 1)) stop("must have 0 < mean < 1")
   if ( any(sd <= 0 )) stop("sd must be > 0")
-  kappa = mean*(1-mean)/sd^2 - 1
+  mean <- round(mean,10)
+  sd <- round(sd,10)
+  kappa <- mean*(1-mean)/sd^2 - 1
   if ( any(kappa < 0 )) stop("invalid combination of mean and sd")
   a = mean * kappa
   b = ( 1.0 - mean ) * kappa
