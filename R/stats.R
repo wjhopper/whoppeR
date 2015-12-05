@@ -123,8 +123,8 @@ betaABfromMeanSD = function( mean , sd ) {
 
 #' gammaShRaFromMeanSD
 #' Gamma distribution shape and rate parameters recovered fromm mean and sd
-#' @param mean
-#' @param sd
+#' @param mean A numeric vector
+#' @param sd A numeric vector
 #'
 #' @return A named list with 2 elements:
 #' shape = Gamma distribution shape paratmeter
@@ -144,8 +144,8 @@ gammaShRaFromMeanSD = function( mean , sd ) {
 
 #' gammaShRaFromModeSD
 #'Gamma distribution shape and rate parameters recovered fromm mode and sd
-#' @param mode
-#' @param sd
+#' @param mode a numeric vector
+#' @param sd a numeric vector
 #'
 #' @return A named list with 2 elements:
 #' shape = Gamma distribution shape paratmeter
