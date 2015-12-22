@@ -1,20 +1,42 @@
-
-#' estBetaParams
-#' Solve for the shape parameters of the beta distribution given its mean and
-#' variance
+#' t test summary
+#' performs a t-test comparing the data from two specified groups,
+#' calculates Cohen's d as a measure of effect size, and returns the
+#' results in format suitable for including in a matrix, data frame or table
 #'
-#' @param mu A numeric vector of length 1, [0,1]
-#' @param var A numeric vector of length 1, [0,1]
+#' @param pair A vector of length two specifying which groups should be compared.
+#' @param formula A formula identifying the columns holding the dependent and independent
+#' variables in the data frame/matrix.
+#' @param data A data frame or matrix containing the variables in the formula.
+#' @param ... Other arguments passed to the t.test function
 #'
-#' @return A list with 2 elements, alpha and beta
+#' @return A named numeric vector, with an element for the Student's t static,
+#' the degrees of freedom used for the t.test, the upper and lower bounds of the confidence
+#' interval, Cohen's, and the p value.
+#'
 #' @export
 #'
-#' @examples
-#' estBetaParams(mu = .5, var = .25)
-estBetaParams <- function(mu, var) {
-  alpha <- ((1 - mu) / var - 1 / mu) * mu ^ 2
-  beta <- alpha * (1 / mu - 1)
-  return(params = list(alpha = alpha, beta = beta))
+#' @author Will Hopper
+#'
+t_summary <- function(pair, formula, data, ...) {
+
+  if (missing(formula) || (length(formula) != 3L) || (length(attr(terms(formula[-2L]),
+                                                                  "term.labels")) != 1L)) {
+    stop("'formula' missing or incorrect")
+  }
+
+  if (missing(pair) || (length(pair) != 2L)) {
+    stop("'pair' missing or incorrect")
+  }
+
+  grouping_var <- as.character(formula)[3L]
+  pair_subset <- data[data[[grouping_var]] %in% pair,]
+  t <- t.test(formula = formula, data =  pair_subset, ...)
+  d <- cohen.d(formula = formula, data = droplevels(pair_subset))
+  results <- c(t$statistic,t$parameter,t$conf.int,d$estimate,t$p.value)
+  names(results) <- c(paste(t$alternative, "t"),"df", "CI Lower", "CI Upper",
+                      "Cohen's d", "p")
+  attributes(results) <- c(attributes(results),list(pair = paste(pair, collapse = " - ")))
+  return(results)
 }
 
 #' meanBeta
