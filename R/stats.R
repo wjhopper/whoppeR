@@ -39,36 +39,26 @@ t_summary <- function(pair, formula, data, ...) {
   return(results)
 }
 
-#' meanBeta
-#' Calculate the mean of a beta distribution given its two shape parameters
+#' Beta Distribution Moments
+#' Calculate the mean and variance of a beta distribution, given its two shape parameters
 #'
 #' @param alpha Beta distribution shape parameter #1 [0, Inf]
 #' @param beta  Beta distribution shape parameter #2 [0, Inf]
 #'
-#' @return A numeric scalar
+#' @return Named list with 2 elements:
+#' mean = mean of given beta disitribution
+#' var = variance of given beta disitribution
 #' @export
 #'
 #' @author Will Hopper
 #' @examples
-#' meanBeta(alpha=.01, beta = 1)
-meanBeta <- function(alpha, beta){
-  return(alpha/(alpha + beta))
+#' betaMoments(alpha=.01, beta = 1)
+betaMoments <- function(alpha, beta){
+  m <- alpha/(alpha + beta)
+  v <- (alpha*beta)/(((alpha+beta)^2)*(alpha + beta + 1))
+  return(list(mean=m, var=v))
 }
 
-#' varBeta
-#' Calculate the variance of a beta distribution given its two shape parameters
-#'
-#' @param alpha Beta distribution shape parameter #1 [0, Inf]
-#' @param beta  Beta distribution shape parameter #2 [0, Inf]
-#'
-#' @return A numeric scalar
-#' @export
-#'
-#' @examples
-#' varBeta(alpha=.01, beta = 1)
-varBeta <- function(alpha, beta) {
-  return((alpha*beta)/(((alpha+beta)^2)*(alpha + beta + 1)))
-}
 
 #' betaABfromMeanKappa
 #' Beta distribution shape parameters recovered from mean and concentration:
