@@ -185,20 +185,64 @@ ABfromMeanKappa = function( mean , kappa ) {
   return( list( a=a , b=b ) )
 }
 
-#' gammaShRaFromMeanSD
+#' Gamma Shape and Rate
+#' Determine the shape and rate parameter of a gamma distribution, given its central
+#' tendency and spread.See the 'Details' section for constraints on which arguments
+#' may be used together.
+#'
+#' @param mean A numeric vector
+#' @param mode A numeric vector
+#' @param sd A numeric vector
+#'
+#' @return Named list with 2 elements:
+#' S = Gamma shape parameter (alpha)
+#' R = Gamma rate parameter (beta)
+#'
+#' @details Only two parameters may be specified together. Specifically, one parameter
+#' relating to the distributions central tendency (i.e. mean or mode) must be specified with
+#' the standard deviation.
+#'
+#' @examples
+#' gammaParams(mean = .1.5, sd = 3)
+#' gammaParams(mode = 2, sd = 3)
+#'
+#' # Throws an error, because mean and mode cannot be used to find the shape and rate.
+#' \dontrun{gammaParams(mean = 2, mode = 3)}
+#'
+#' @author Will Hopper (2016)
+#' Inspired by functions writen by John Krushke to accompany his "Doing Bayesian Data Analysis" book.
+#' Kruschke, J. K. (2015). Doing Bayesian Data Analysis, Second Edition:
+#' A Tutorial with R, JAGS, and Stan. Academic Press / Elsevier.
+#' @export
+gammaParams = function(mean, mode, sd) {
+
+  input <- as.list(match.call())[-1]
+  if (!identical(length(input), 2L)) {
+    stop("Exactly two arguments must be specified")
+  }
+
+  if (setequal(names(input), c("mode","sd"))) {
+    return(SRfromModeSD(mode,sd))
+  } else if (setequal(names(input), c("mean","sd"))) {
+    return(SRfromMeanSD(mean, sd))
+  } else {
+    stop("Invalid combination of arguments: Must specify mean & sd, or mode & sd")
+  }
+}
+
+#' SRfromMeanSD
 #' Gamma distribution shape and rate parameters recovered fromm mean and sd
 #' @param mean A numeric vector
 #' @param sd A numeric vector
-#'
 #' @return A named list with 2 elements:
 #' shape = Gamma distribution shape paratmeter
 #' rate = Gamma distribution rate parameter
-#' @export
 #' @author John Krushke, in Kruschke, J. K. (2015). Doing Bayesian Data Analysis, Second Edition:
 #' A Tutorial with R, JAGS, and Stan. Academic Press / Elsevier.
 #' @examples
-#' gammaShRaFromMeanSD(mode = 2, sd = 3)
-gammaShRaFromMeanSD = function( mean , sd ) {
+#' \dontrun{SRfromMeanSD(mean = 1.5, sd = 3)}
+#'
+SRfromMeanSD = function( mean , sd ) {
   if ( any(mean <=0) ) stop("mean must be > 0")
   if ( any(sd <=0) ) stop("sd must be > 0")
   shape = mean^2/sd^2
@@ -206,21 +250,19 @@ gammaShRaFromMeanSD = function( mean , sd ) {
   return( list( shape=shape , rate=rate ) )
 }
 
-#' gammaShRaFromModeSD
-#'Gamma distribution shape and rate parameters recovered fromm mode and sd
+#' SRfromModeSD
+#' Gamma distribution shape and rate parameters recovered from mode and sd
 #' @param mode a numeric vector
 #' @param sd a numeric vector
-#'
 #' @return A named list with 2 elements:
 #' shape = Gamma distribution shape paratmeter
 #' rate = Gamma distribution rate parameter
-#' @export
-#'
 #' @author John Krushke, in Kruschke, J. K. (2015). Doing Bayesian Data Analysis, Second Edition:
 #' A Tutorial with R, JAGS, and Stan. Academic Press / Elsevier.
 #' @examples
-#' gammaShRaFromModeSD(mode = 2, sd = 3)
-gammaShRaFromModeSD = function( mode , sd ) {
+#' \dontrun{SRfromModeSD(mode = 2, sd = 3)}
+#'
+SRfromModeSD = function( mode , sd ) {
   if ( mode <=0 ) stop("mode must be > 0")
   if ( sd <=0 ) stop("sd must be > 0")
   rate = ( mode + sqrt( mode^2 + 4 * sd^2 ) ) / ( 2 * sd^2 )
