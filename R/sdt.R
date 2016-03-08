@@ -1,11 +1,12 @@
 
-#' d'
-#' Calculate the d-prime statistic using the hit and false alarm rate
+#' d-prime
+#'
+#' Calculate the d' statistic using the hit and false alarm rate
 #' to stimuli from the target and lure distribution, respectively.
 #'
-#' @param HR A logical vector of yes (TRUE)/no (FALSE) responses to stimili from
+#' @param targets A logical vector of yes (TRUE)/no (FALSE) responses to stimili from
 #' the target (S1) distribution. Used to calculate the Hit Rate.
-#' @param FA  logical vector of yes (TRUE)/no (FALSE) responses to stimili from
+#' @param lures  logical vector of yes (TRUE)/no (FALSE) responses to stimili from
 #' the lure (S0) distribution. Used to calculate the False Alarm Rate.
 #' @param correct If true, the 1/2n correction is applied for all yes or all no responses so that
 #' the dprime statistic is not Inf or NaN after the z-transform is applied to the Hit and False Alarm Rates
