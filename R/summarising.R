@@ -98,3 +98,88 @@ performanceBins <- function(data, bin_by,
   return(binned)
 
 }
+
+#' Title
+#'
+#' @param data A data frame
+#' @param DV Character vector giving the dependent variable
+#' @param betweenvars Character vector giving the between subject variables
+#' @param withinvars Character vector giving the within subject variables
+#' @param idvar Character vector giving the name of the column holding subject
+#' identifiers
+#' @param CI_width Numeric vector giving the confidence level for computing the
+#' confidence interval boundaries. Must be between 0 and 1, non-inclusive.
+#'
+#' @return A data frame
+#' @export
+#'
+#' @import dplyr
+#' @importFrom magrittr %<>%
+#' @importFrom lazyeval interp
+#'
+#' @examples
+#' library(tidyr)
+#' data <- data.frame(subject = 1:12,
+#' Round_Mono = c(41L, 57L, 52L, 49L, 47L, 37L, 47L, 41L, 48L, 37L, 32L, 47L),
+#' Square_Mono = c(40L, 56L, 53L, 47L, 48L, 34L, 50L, 40L, 47L, 35L, 31L, 42L),
+#' Round_Color = c(41L, 56L, 53L, 47L, 48L, 35L, 47L, 38L, 49L, 36L, 31L, 42L),
+#' Square_Color = c(37L, 53L, 50L, 47L, 47L, 36L, 46L, 40L, 45L, 35L, 33L, 42L)) %>%
+#'   gather(condition, time, Round_Mono:Square_Color) %>%
+#'   separate(condition, c("Shape","Color"), sep = "_") %>%
+#'   setNames(tolower(names(.)))
+#'
+#' data_summary <- WISEsummary(data, DV = "time", withinvars = c("shape","color"),
+#'                             idvar = "subject")
+#'
+WISEsummary <- function(data, DV, betweenvars=NULL, withinvars=NULL,
+                            idvar=NULL, CI_width=.95) {
+
+  # Norm each subject's data so that each subject's mean is equal to the mean
+  # of the between subject condition they are in
+  #
+  # To do this, we get each subject's mean, join it with the raw data,
+  # then center the obsevations from each subject around the grand mean
+  # by subtracting off the indvidual mean for each subject, and then add
+  # the grand mean
+  #
+  # Then we use this re-centered data as the new "raw" data, to calculate
+  # means, sd, and sem as usual
+
+  normed_avg <- data %>% group_by_(.dots = idvar) %>%
+    summarise_(subject_avg = lazyeval::interp(~mean(var), var = as.name(DV))) %>%
+    left_join(x = data, y = . , by = idvar) %>%
+    mutate_(centered_avg = interp(~ DV - subject_avg + mean(DV),
+                                  DV = as.name(DV))) %>%
+    select(-subject_avg) %>%
+    group_by_(.dots =  c(betweenvars, withinvars)) %>%
+    summarise_each(funs = funs(mean,sd, n()),centered_avg) %>%
+    mutate(sem = sd/sqrt(n))
+
+  # Get the averages in each condition (grouping by within and between variables,
+  # ignoring the subjects
+  data %<>% group_by_(.dots =  c(betweenvars, withinvars)) %>%
+    summarise_(avg = lazyeval::interp(~mean(var), var = as.name(DV)))
+
+
+  # Apply correction from Morey (2008) to the standard error and confidence interval
+  #  Get the product of the number of conditions of within-S variables
+  nCells <- normed_avg %>%
+    ungroup() %>%
+    select_(.dots = withinvars) %>%
+    distinct() %>%
+    nrow()
+  correction <- sqrt(x = (nCells/(nCells - 1)))
+
+  # Apply the correction factor to all our measures of variablity
+  normed_avg[,c("sd", "sem")] <- lapply(normed_avg[,c("sd", "sem")], `*`, correction)
+
+  normed_avg %>%
+    mutate(CI_lower = mean + qt((1- CI_width)/2, n-1)*sem,
+           CI_upper = mean + (mean - CI_lower)) %>%
+    left_join(x = data, y = . , by = c(betweenvars, withinvars)) %>%
+    rename_(.dots = setNames(c("mean", "avg"), c(paste0("normed_",DV), DV))) %>%
+    ungroup() %>%
+    return()
+}
+
+
