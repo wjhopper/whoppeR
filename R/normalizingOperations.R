@@ -65,3 +65,23 @@ sequentialRange <- function(x,baseValue = 1) {
   x <- as.numeric(levels(x)[x])
   return(x)
 }
+
+
+#' prettifyTable
+#'
+#' Pretty-print a truncated data frame or matrix used in markdown documents with "..."
+#' as the last value in each column to indicate there are more rows not shown.
+#'
+#' @param data The data frame to subset and print
+#' @param rows The index vector definining the number of rows to print from the first row
+#'
+#' @return The subset data frame, with an addition row of "...", and all variables
+#' coerced to characters
+#' @export
+#'
+#' @examples
+#' prettifyTable(Orange, 9)
+prettifyTable <- function(data, rows) {
+  rbind(sapply(data[1:rows,],as.character),
+        rep("...", ncol(data)))
+}
