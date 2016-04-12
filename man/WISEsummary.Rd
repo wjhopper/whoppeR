@@ -2,7 +2,7 @@
 % Please edit documentation in R/summarising.R
 \name{WISEsummary}
 \alias{WISEsummary}
-\title{Title}
+\title{WISEsummmary}
 \usage{
 WISEsummary(data, DV, betweenvars = NULL, withinvars = NULL, idvar = NULL,
   CI_width = 0.95)
@@ -26,7 +26,7 @@ confidence interval boundaries. Must be between 0 and 1, non-inclusive.}
 A data frame
 }
 \description{
-Title
+Within-subject Error Summary
 }
 \examples{
 library(tidyr)

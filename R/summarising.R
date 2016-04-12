@@ -99,7 +99,9 @@ performanceBins <- function(data, bin_by,
 
 }
 
-#' Title
+#' WISEsummmary
+#'
+#' Within-subject Error Summary
 #'
 #' @param data A data frame
 #' @param DV Character vector giving the dependent variable
@@ -156,30 +158,32 @@ WISEsummary <- function(data, DV, betweenvars=NULL, withinvars=NULL,
     mutate(sem = sd/sqrt(n))
 
   # Get the averages in each condition (grouping by within and between variables,
-  # ignoring the subjects
+  # ignoring the subjects. Standard 'unnormed' means.
   data %<>% group_by_(.dots =  c(betweenvars, withinvars)) %>%
-    summarise_(avg = lazyeval::interp(~mean(var), var = as.name(DV)))
+    summarise_(mean = lazyeval::interp(~mean(var), var = as.name(DV)))
 
+  # Combine the normed and unnormed averages
+  normed_avg %<>%
+    ungroup() %>%
+    left_join(x = data, y = . , by = c(betweenvars, withinvars)) %>%
+    mutate(CI =  qt((1-CI_width)/2, n-1, lower.tail = FALSE)*sem)
 
   # Apply correction from Morey (2008) to the standard error and confidence interval
-  #  Get the product of the number of conditions of within-S variables
+  # Get the product of the number of conditions of within-S variables
   nCells <- normed_avg %>%
-    ungroup() %>%
     select_(.dots = withinvars) %>%
     distinct() %>%
-    nrow()
+    dim() %>%
+    prod()
   correction <- sqrt(x = (nCells/(nCells - 1)))
 
   # Apply the correction factor to all our measures of variablity
-  normed_avg[,c("sd", "sem")] <- lapply(normed_avg[,c("sd", "sem")], `*`, correction)
+  normed_avg[,c("sd","sem","CI")] <- lapply(normed_avg[,c("sd","sem","CI")], `*`, correction)
 
-  normed_avg %>%
-    mutate(CI_lower = mean + qt((1- CI_width)/2, n-1)*sem,
-           CI_upper = mean + (mean - CI_lower)) %>%
-    left_join(x = data, y = . , by = c(betweenvars, withinvars)) %>%
-    rename_(.dots = setNames(c("mean", "avg"), c(paste0("normed_",DV), DV))) %>%
-    ungroup() %>%
-    return()
+  # Calculate CI upper and lower bounds
+  normed_avg %<>% mutate(CI_upper = mean.x + CI,
+                         CI_lower = mean.x - CI) %>%
+    rename_(.dots = setNames(c("mean.y", "mean.x"), c(paste0("normed_",DV), DV)))
+
+  return(normed_avg)
 }
-
-
