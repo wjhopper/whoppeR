@@ -121,8 +121,9 @@ performanceBins <- function(data, bin_by,
 #'
 #' @examples
 #' library(whoppeR)
-#' data_summary <- WISEsummary(MemoryDrugs, DV = "time", idvar = "subject",
-#'                             withinvars = c("shape","color"))
+#' collapsed <- WISEsummary(MemoryDrugs, DV = "Recall", idvar = "Subject",
+#'                          betweenvars = c("Gender", "Dosage"),
+#'                          withinvars = c("Task", "Valence"))
 #'
 WISEsummary <- function(data, DV, betweenvars=NULL, withinvars=NULL,
                             idvar=NULL, CI_width=.95) {
@@ -161,11 +162,11 @@ WISEsummary <- function(data, DV, betweenvars=NULL, withinvars=NULL,
 
   # Apply correction from Morey (2008) to the standard error and confidence interval
   # Get the product of the number of conditions of within-S variables
-  nCells <- normed_avg %>%
+  nCells <- ungroup(normed_avg) %>%
     select_(.dots = withinvars) %>%
     distinct() %>%
-    dim() %>%
-    prod()
+    nrow()
+
   correction <- sqrt(x = (nCells/(nCells - 1)))
 
   # Apply the correction factor to all our measures of variablity

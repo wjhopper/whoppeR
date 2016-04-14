@@ -1,17 +1,6 @@
 context("Testing WISE summary function for computing within-subject error variance")
 
-library(tidyr)
-
-data <- data.frame(subject = 1:12,
-                   Round_Mono = c(41L, 57L, 52L, 49L, 47L, 37L, 47L, 41L, 48L, 37L, 32L, 47L),
-                   Square_Mono = c(40L, 56L, 53L, 47L, 48L, 34L, 50L, 40L, 47L, 35L, 31L, 42L),
-                   Round_Color = c(41L, 56L, 53L, 47L, 48L, 35L, 47L, 38L, 49L, 36L, 31L, 42L),
-                   Square_Color = c(37L, 53L, 50L, 47L, 47L, 36L, 46L, 40L, 45L, 35L, 33L, 42L)) %>%
-  gather(condition, time, Round_Mono:Square_Color) %>%
-  separate(condition, c("Shape","Color"), sep = "_") %>%
-  setNames(tolower(names(.)))
-
-answer <- structure(list(shape = c("Round", "Round", "Square", "Square"),
+ColorShape_summary <- structure(list(shape = c("Round", "Round", "Square", "Square"),
   color = c("Color", "Mono", "Color", "Mono"),
   time = c(43.5833333333333, 44.5833333333333, 42.5833333333333, 43.5833333333333),
   normed_time = c(43.5833333333333,44.5833333333333, 42.5833333333333, 43.5833333333333),
@@ -22,10 +11,23 @@ answer <- structure(list(shape = c("Round", "Round", "Square", "Square"),
   class = c("tbl_df","tbl", "data.frame"), row.names = c(NA, -4L),
   .Names = c("shape","color", "time", "normed_time", "sd", "n", "sem", "CI_lower","CI_upper"))
 
+load("../MemoryDrug_summary.rda")
+
 test_that("WISE error calculation is accurate", {
-  data_summary <- WISEsummary(data, DV = "time", withinvars = c("shape","color"),
+
+  ColorShape_test <- WISEsummary(ColorShapes, DV = "time", withinvars = c("shape","color"),
                        idvar = "subject")
   mapply(function(x,y) expect_equal(round(x, 10), round(x, 10)),
-         data_summary[, c("time", "normed_time", "sd", "n", "sem", "CI_lower","CI_upper")],
-         answer[, c("time", "normed_time", "sd", "n", "sem", "CI_lower","CI_upper")])
+         ColorShape_test[, c("time", "normed_time", "sd", "n", "sem", "CI_lower","CI_upper")],
+         ColorShape_summary[, c("time", "normed_time", "sd", "n", "sem", "CI_lower","CI_upper")])
+
+  MemoryDrug_test <- WISEsummary(MemoryDrugs, DV = "Recall", idvar = "Subject",
+                                 betweenvars = c("Gender","Dosage"),
+                                 withinvars = c("Task", "Valence"))
+  mapply(expect_equal,
+         MemoryDrug_test[, c("Recall", "normed_Recall", "sd", "n", "sem")],
+         MemoryDrug_summary[, c("Recall", "Recall_norm", "sd", "N", "se")])
+  expect_equal((MemoryDrug_test$CI_upper - MemoryDrug_test$Recall),
+               MemoryDrug_summary$ci)
+
 })
