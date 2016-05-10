@@ -54,8 +54,7 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 ##   na.rm: a boolean that indicates whether to ignore NA's
 normDataWithin <- function(data=NULL, idvar, measurevar, betweenvars=NULL,
                            na.rm=FALSE, .drop=TRUE) {
-  library(plyr)
-  
+
   # Measure var on left, idvar + between vars on right of formula.
   data.subjMean <- ddply(data, c(idvar, betweenvars), .drop=.drop,
                          .fun = function(xx, col, na.rm) {
@@ -143,5 +142,9 @@ MemoryDrug <- read.csv("../data-raw/MemoryDrug.csv", strip.white= TRUE)
 MemoryDrug_summary  <- summarySEwithin(MemoryDrug, measurevar="Recall",
                          betweenvars = c("Gender","Dosage"), idvar = "Subject",
                          withinvars = c("Task", "Valence"))
-# save(MemoryDrug_summary, file = "MemoryDrug_summary.rda")
 
+### Sanity Check
+AOV <- aov(Recall~(Task*Valence*Gender*Dosage)+Error(Subject/(Task*Valence)),
+           data = MemoryDrugs)
+cell_means <- model.tables(AOV,"means")[[1]]$`Task:Valence:Gender:Dosage`
+# save(MemoryDrug_summary, file = "MemoryDrug_summary.rda")
