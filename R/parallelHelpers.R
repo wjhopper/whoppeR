@@ -8,8 +8,8 @@ doParallelCluster <- function(nCores){
       library(doParallel)
       out <- tempfile(pattern = "parallel", fileext = ".log")
       cluster <- makeCluster(nCores, outfile = out)
-      registerDoParallel(cl)
-      return(list(cluster,logfile = out))
+      registerDoParallel(cluster)
+      return(list(handle = cluster, logfile = out))
 
     } else {
       warning("Packages foreach and doParallel not found to do parallel processing")
