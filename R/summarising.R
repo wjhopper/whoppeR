@@ -121,6 +121,7 @@ performanceBins <- function(data, bin_by,
 #'
 #' @examples
 #' library(whoppeR)
+#' head(MemoryDrugs)
 #' collapsed <- WISEsummary(MemoryDrugs, DV = "Recall", idvar = "Subject",
 #'                          betweenvars = c("Gender", "Dosage"),
 #'                          withinvars = c("Task", "Valence"))

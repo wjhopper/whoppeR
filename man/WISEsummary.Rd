@@ -30,8 +30,10 @@ Within-subject Error Summary
 }
 \examples{
 library(whoppeR)
-data_summary <- WISEsummary(MemoryDrugs, DV = "time", idvar = "subject",
-                            withinvars = c("shape","color"))
+head(MemoryDrugs)
+collapsed <- WISEsummary(MemoryDrugs, DV = "Recall", idvar = "Subject",
+                         betweenvars = c("Gender", "Dosage"),
+                         withinvars = c("Task", "Valence"))
 
 }
 
