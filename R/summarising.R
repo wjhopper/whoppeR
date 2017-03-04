@@ -140,43 +140,43 @@ WISEsummary <- function(data, DV, betweenvars=NULL, withinvars=NULL,
   # Then we use this re-centered data as the new "raw" data, to calculate
   # means, sd, and sem as usual
 
-  normed_avg <- data %>% group_by_(.dots = idvar) %>%
-    summarise_(subject_avg = lazyeval::interp(~mean(var), var = as.name(DV))) %>%
+  normed_avg <- data %>%
+    group_by_(.dots = idvar) %>%
+    summarise_at(DV, funs(subject_avg = mean)) %>%
     left_join(x = data, y = . , by = idvar) %>%
-    mutate_(centered_avg = interp(~ DV - subject_avg + mean(DV),
-                                  DV = as.name(DV))) %>%
-    select(-subject_avg) %>%
+    mutate_at(vars(contains("subject_avg")),
+              funs_(interp(~DV - . + mean(DV), DV = as.name(DV)))
+              ) %>%
     group_by_(.dots =  c(betweenvars, withinvars)) %>%
-    summarise_each(funs = funs(mean,sd, n()),centered_avg) %>%
-    mutate(sem = sd/sqrt(n))
+    summarise_at(vars(contains("subject_avg")),
+                 funs(mean,sd, n())
+                 ) %>%
+    mutate(sem = sd/sqrt(n)) %>%
+    ungroup()
 
   # Get the averages in each condition (grouping by within and between variables,
   # ignoring the subjects. Standard 'unnormed' means.
   data %<>% group_by_(.dots =  c(betweenvars, withinvars)) %>%
-    summarise_(mean = lazyeval::interp(~mean(var), var = as.name(DV)))
+    summarise_at(DV, mean) %>%
+    ungroup()
 
   # Combine the normed and unnormed averages
   normed_avg %<>%
-    ungroup() %>%
     left_join(x = data, y = . , by = c(betweenvars, withinvars)) %>%
     mutate(CI =  qt((1-CI_width)/2, n-1, lower.tail = FALSE)*sem)
 
   # Apply correction from Morey (2008) to the standard error and confidence interval
   # Get the product of the number of conditions of within-S variables
-  nCells <- ungroup(normed_avg) %>%
-    select_(.dots = withinvars) %>%
-    distinct() %>%
-    nrow()
-
+  nCells <- nrow(distinct_(normed_avg, .dots = withinvars))
   correction <- sqrt(x = (nCells/(nCells - 1)))
 
   # Apply the correction factor to all our measures of variablity
   normed_avg[,c("sd","sem","CI")] <- lapply(normed_avg[,c("sd","sem","CI")], `*`, correction)
 
   # Calculate CI upper and lower bounds
-  normed_avg %<>% mutate(CI_upper = mean.x + CI,
-                         CI_lower = mean.x - CI) %>%
-    rename_(.dots = setNames(c("mean.y", "mean.x"), c(paste0("normed_",DV), DV)))
+  normed_avg %<>% mutate_at(DV, funs(CI_upper = . + CI,
+                                     CI_lower = . - CI)) %>%
+    rename_(.dots = setNames(c("mean"), c(paste0("normed_",DV))))
 
   return(normed_avg)
 }
