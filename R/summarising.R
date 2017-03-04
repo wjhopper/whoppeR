@@ -180,3 +180,32 @@ WISEsummary <- function(data, DV, betweenvars=NULL, withinvars=NULL,
 
   return(normed_avg)
 }
+
+
+#' Standard Error of the Mean
+#'
+#' Calculates the standard error of the mean statistic, an estimate of the variability
+#'  of the sampling distribution of the mean. Uses the following forumula:
+#'
+#' \deqn{S.E.M. = \sqrt{\frac{Var(x)}{N}}}{S.E.M. =  sqrt(Var(x)/N)}
+#'
+#' @param x A numeric or logical atomic vector
+#' @param na.rm a logical value indicating whether NA values should be removed from the input.
+#'
+#' @return A scalar numeric vector
+#' @export
+#'
+#' @examples
+#'
+#' x <- runif(30, 5, 2)
+#' sem(x)
+#'
+sem <- function(x, na.rm = FALSE) {
+
+  if (!(is.numeric(x) || is.logical(x))) {
+    stop('argument "x" is not a numeric or logical atomic vector')
+  }
+
+  ## Standard error of the mean calculation
+  sqrt(var(x) / length(x))
+}
