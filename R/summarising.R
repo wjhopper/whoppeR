@@ -149,9 +149,8 @@ WISEsummary <- function(data, DV, betweenvars=NULL, withinvars=NULL,
               ) %>%
     group_by_(.dots =  c(betweenvars, withinvars)) %>%
     summarise_at(vars(contains("subject_avg")),
-                 funs(mean,sd, n())
+                 funs(mean, sem, n())
                  ) %>%
-    mutate(sem = sd/sqrt(n)) %>%
     ungroup()
 
   # Get the averages in each condition (grouping by within and between variables,
@@ -161,21 +160,25 @@ WISEsummary <- function(data, DV, betweenvars=NULL, withinvars=NULL,
     ungroup()
 
   # Combine the normed and unnormed averages
-  normed_avg %<>%
-    left_join(x = data, y = . , by = c(betweenvars, withinvars)) %>%
-    mutate(CI =  qt((1-CI_width)/2, n-1, lower.tail = FALSE)*sem)
+  normed_avg <- left_join(x = data,
+                          y = normed_avg,
+                          by = c(betweenvars, withinvars)
+                          )
 
   # Apply correction from Morey (2008) to the standard error and confidence interval
   # Get the product of the number of conditions of within-S variables
   nCells <- nrow(distinct_(normed_avg, .dots = withinvars))
-  correction <- sqrt(x = (nCells/(nCells - 1)))
+  correction <- sqrt((nCells/(nCells - 1)))
 
-  # Apply the correction factor to all our measures of variablity
-  normed_avg[,c("sd","sem","CI")] <- lapply(normed_avg[,c("sd","sem","CI")], `*`, correction)
+  # Apply the correction factor to the SEM estimate
+  normed_avg$sem <- normed_avg$sem * correction
 
   # Calculate CI upper and lower bounds
-  normed_avg %<>% mutate_at(DV, funs(CI_upper = . + CI,
-                                     CI_lower = . - CI)) %>%
+  normed_avg <- mutate(normed_avg,
+                       CI = qt((1-CI_width)/2, df = n-1, lower.tail = FALSE)*sem) %>%
+    mutate_at(DV, funs(CI_upper = . + CI,
+                       CI_lower = . - CI)) %>%
+    select(-CI) %>%
     rename_(.dots = setNames(c("mean"), c(paste0("normed_",DV))))
 
   return(normed_avg)
@@ -185,15 +188,18 @@ WISEsummary <- function(data, DV, betweenvars=NULL, withinvars=NULL,
 #' Standard Error of the Mean
 #'
 #' Calculates the standard error of the mean statistic, an estimate of the variability
-#'  of the sampling distribution of the mean. Uses the following forumula:
-#'
-#' \deqn{S.E.M. = \sqrt{\frac{Var(x)}{N}}}{S.E.M. =  sqrt(Var(x)/N)}
+#'  of the sampling distribution of the mean. See "details" for equation.
 #'
 #' @param x A numeric or logical atomic vector
 #' @param na.rm a logical value indicating whether NA values should be removed from the input.
 #'
 #' @return A scalar numeric vector
 #' @export
+#'
+#' @details
+#' Uses the following forumula:
+#'
+#' \deqn{S.E.M. = \sqrt{\frac{Var(x)}{N}}}{S.E.M. =  sqrt(Var(x)/N)}
 #'
 #' @examples
 #'

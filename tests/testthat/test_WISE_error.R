@@ -18,15 +18,18 @@ test_that("WISE error calculation is accurate", {
   ColorShape_test <- WISEsummary(ColorShapes, DV = "time", withinvars = c("shape","color"),
                        idvar = "subject")
   mapply(function(x,y) expect_equal(round(x, 10), round(x, 10)),
-         ColorShape_test[, c("time", "normed_time", "sd", "n", "sem", "CI_lower","CI_upper")],
-         ColorShape_summary[, c("time", "normed_time", "sd", "n", "sem", "CI_lower","CI_upper")])
+         ColorShape_test[c("time", "normed_time", "sem", "CI_lower","CI_upper")],
+         ColorShape_summary[c("time", "normed_time", "sem", "CI_lower","CI_upper")])
+  expect_equal(ColorShape_test$sem * sqrt(ColorShape_test$n),
+               ColorShape_summary$sd)
+
 
   MemoryDrug_test <- WISEsummary(MemoryDrugs, DV = "Recall", idvar = "Subject",
                                  betweenvars = c("Gender","Dosage"),
                                  withinvars = c("Task", "Valence"))
   mapply(expect_equal,
-         MemoryDrug_test[, c("Recall", "normed_Recall", "sd", "n", "sem")],
-         MemoryDrug_summary[, c("Recall", "Recall_norm", "sd", "N", "se")])
+         MemoryDrug_test[c("Recall", "normed_Recall", "n", "sem")],
+         MemoryDrug_summary[c("Recall", "Recall_norm", "N", "se")])
   expect_equal((MemoryDrug_test$CI_upper - MemoryDrug_test$Recall),
                MemoryDrug_summary$ci)
 
