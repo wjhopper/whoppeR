@@ -170,7 +170,7 @@ WISEsummary <- function(data, dependentvars, betweenvars=NULL, withinvars=NULL,
                        recentered_value = value - subject_avg + mean(value))
   recentered <- group_by_(recentered, .dots =  c("DV", betweenvars, withinvars))
   recentered <- summarise_at(recentered, "recentered_value",
-                             funs(recentered_mean = mean, sem, n(),sd)
+                             funs(recentered_mean = mean, sem, n())
                              )
   recentered <- ungroup(recentered)
 
