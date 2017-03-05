@@ -1,6 +1,6 @@
 Package: whoppeR
 Title: Assorted utilities used by me, Will Hopper
-Version: 0.0.0.9014
+Version: 0.0.0.9015
 Authors@R: person("Will", "Hopper", email = "whopper@psych.umass.edu", role = c("aut", "cre"))
 Description: This package just holds stand alone functions, ggplot themes, and
     whatever else I want to take with me from place to place but doesn't fit well
@@ -10,7 +10,8 @@ Depends:
 Imports:
     dplyr (>= 0.5.0),
     ggplot2,
-    effsize
+    effsize,
+    tidyr
 License: CC0
 LazyData: true
 RoxygenNote: 5.0.1

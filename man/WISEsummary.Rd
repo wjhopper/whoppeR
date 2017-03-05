@@ -4,13 +4,13 @@
 \alias{WISEsummary}
 \title{WISEsummmary}
 \usage{
-WISEsummary(data, DV, betweenvars = NULL, withinvars = NULL, idvar = NULL,
-  CI_width = 0.95)
+WISEsummary(data, dependentvars, betweenvars = NULL, withinvars = NULL,
+  idvar = NULL, CI_width = 0.95, na.rm = FALSE)
 }
 \arguments{
 \item{data}{A data frame}
 
-\item{DV}{Character vector giving the dependent variable}
+\item{dependentvars}{Character vector giving the dependent variable}
 
 \item{betweenvars}{Character vector giving the between subject variables}
 
@@ -21,6 +21,8 @@ identifiers}
 
 \item{CI_width}{Numeric vector giving the confidence level for computing the
 confidence interval boundaries. Must be between 0 and 1, non-inclusive.}
+
+\item{na.rm}{a logical value indicating whether NA values should be removed from the Dependent Variables.}
 }
 \value{
 A data frame
@@ -31,7 +33,9 @@ Within-subject Error Summary
 \examples{
 library(whoppeR)
 head(MemoryDrugs)
-collapsed <- WISEsummary(MemoryDrugs, DV = "Recall", idvar = "Subject",
+collapsed <- WISEsummary(MemoryDrugs,
+                         dependentvars = "Recall",
+                         idvar = "Subject",
                          betweenvars = c("Gender", "Dosage"),
                          withinvars = c("Task", "Valence"))
 

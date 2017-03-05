@@ -104,30 +104,35 @@ performanceBins <- function(data, bin_by,
 #' Within-subject Error Summary
 #'
 #' @param data A data frame
-#' @param DV Character vector giving the dependent variable
+#' @param dependentvars Character vector giving the dependent variable
 #' @param betweenvars Character vector giving the between subject variables
 #' @param withinvars Character vector giving the within subject variables
 #' @param idvar Character vector giving the name of the column holding subject
 #' identifiers
 #' @param CI_width Numeric vector giving the confidence level for computing the
 #' confidence interval boundaries. Must be between 0 and 1, non-inclusive.
+#' @param na.rm a logical value indicating whether NA values should be removed from the Dependent Variables.
 #'
 #' @return A data frame
 #' @export
 #'
 #' @import dplyr
+#' @importFrom tidyr gather_
+#' @importFrom tidyr spread_
 #' @importFrom magrittr %<>%
 #' @importFrom lazyeval interp
 #'
 #' @examples
 #' library(whoppeR)
 #' head(MemoryDrugs)
-#' collapsed <- WISEsummary(MemoryDrugs, DV = "Recall", idvar = "Subject",
+#' collapsed <- WISEsummary(MemoryDrugs,
+#'                          dependentvars = "Recall",
+#'                          idvar = "Subject",
 #'                          betweenvars = c("Gender", "Dosage"),
 #'                          withinvars = c("Task", "Valence"))
 #'
-WISEsummary <- function(data, DV, betweenvars=NULL, withinvars=NULL,
-                            idvar=NULL, CI_width=.95) {
+WISEsummary <- function(data, dependentvars, betweenvars=NULL, withinvars=NULL,
+                        idvar=NULL, CI_width=.95, na.rm=FALSE) {
 
   # Norm each subject's data so that each subject's mean is equal to the mean
   # of the between subject condition they are in
@@ -140,48 +145,75 @@ WISEsummary <- function(data, DV, betweenvars=NULL, withinvars=NULL,
   # Then we use this re-centered data as the new "raw" data, to calculate
   # means, sd, and sem as usual
 
-  normed_avg <- data %>%
-    group_by_(.dots = idvar) %>%
-    summarise_at(DV, funs(subject_avg = mean)) %>%
-    left_join(x = data, y = . , by = idvar) %>%
-    mutate_at(vars(contains("subject_avg")),
-              funs_(interp(~DV - . + mean(DV), DV = as.name(DV)))
-              ) %>%
-    group_by_(.dots =  c(betweenvars, withinvars)) %>%
-    summarise_at(vars(contains("subject_avg")),
-                 funs(mean, sem, n())
-                 ) %>%
-    ungroup()
+  # Reshape the data into a long format that combines values from different DV's into
+  # one column. This makes the operations that calculate different means, SEMs, and CI
+  # widths for different DVs simple column-wise operations on data frames grouped by
+  # the DV variable name.
 
   # Get the averages in each condition (grouping by within and between variables,
   # ignoring the subjects. Standard 'unnormed' means.
-  data %<>% group_by_(.dots =  c(betweenvars, withinvars)) %>%
-    summarise_at(DV, mean) %>%
-    ungroup()
+  cell_means <- group_by_(data,.dots =  c(betweenvars, withinvars))
+  cell_means <- summarise_at(cell_means, dependentvars, funs(mean = mean), na.rm = na.rm)
+  cell_means <- ungroup(cell_means)
+  if (length(dependentvars) == 1) {
+    names(cell_means)[ncol(cell_means)] %<>% paste(dependentvars, ., sep="_")
+  }
 
-  # Combine the normed and unnormed averages
-  normed_avg <- left_join(x = data,
-                          y = normed_avg,
-                          by = c(betweenvars, withinvars)
-                          )
+  data <- gather_(data, "DV", "value", dependentvars, na.rm = na.rm)
+  data <- group_by_(data, .dots = c("DV", idvar))
+  recentered <- summarise_at(data, "value", funs(subject_avg = mean))
+  recentered <- left_join(x = data,
+                          y = recentered,
+                          by = c(idvar,"DV"))
+  recentered <- group_by(recentered, DV)
+  recentered <- mutate(recentered,
+                       recentered_value = value - subject_avg + mean(value))
+  recentered <- group_by_(recentered, .dots =  c("DV", betweenvars, withinvars))
+  recentered <- summarise_at(recentered, "recentered_value",
+                             funs(recentered_mean = mean, sem, n(),sd)
+                             )
+  recentered <- ungroup(recentered)
 
-  # Apply correction from Morey (2008) to the standard error and confidence interval
-  # Get the product of the number of conditions of within-S variables
-  nCells <- nrow(distinct_(normed_avg, .dots = withinvars))
+  # Apply correction from Morey (2008) to the standard error
+  # Get the product of the number of conditions of within-subject variables
+  nCells <- nrow(distinct_(cell_means, .dots = withinvars))
   correction <- sqrt((nCells/(nCells - 1)))
 
   # Apply the correction factor to the SEM estimate
-  normed_avg$sem <- normed_avg$sem * correction
+  recentered$sem <- recentered$sem * correction
 
   # Calculate CI upper and lower bounds
-  normed_avg <- mutate(normed_avg,
-                       CI = qt((1-CI_width)/2, df = n-1, lower.tail = FALSE)*sem) %>%
-    mutate_at(DV, funs(CI_upper = . + CI,
-                       CI_lower = . - CI)) %>%
-    select(-CI) %>%
-    rename_(.dots = setNames(c("mean"), c(paste0("normed_",DV))))
+  recentered <- mutate(recentered,
+                       CI = qt((1-CI_width)/2, df = n-1, lower.tail = FALSE)*sem)
 
-  return(normed_avg)
+  # Put the recentered data back into its original form, with a different column
+  # for eaech DV
+  each_DV <- split(recentered, recentered$DV)
+  new_vars <- c("recentered_mean","sem","n","CI")
+  each_DV <- lapply(each_DV,
+                    function(d) {
+                      names(d)[names(d) %in% new_vars] <- paste(d$DV[1], new_vars, sep="_")
+                      select(d, -DV)
+                      }
+                    )
+  recentered <- Reduce(function(x,y) full_join(x,y, by=c(betweenvars, withinvars)),
+                       c(list(cell_means),each_DV))
+
+  CIbounds <- lapply(list(CI_upper=`+`, CI_lower=`-`),
+                     Map,
+                     recentered[paste0(dependentvars, "_mean")],
+                     recentered[paste0(dependentvars, "_CI")]
+                     )
+  CIbounds <- unlist(CIbounds, recursive = FALSE)
+  names(CIbounds) <- sapply(strsplit(names(CIbounds), "\\."),
+                            function(x) sub("_mean","", paste(rev(x),collapse = "_")))
+  recentered <- bind_cols(select(recentered, -contains("CI")),
+                          CIbounds)
+
+  DV_var_locations <- unlist(lapply(dependentvars, grep, x = names(recentered)))
+  ID_var_locations <- setdiff(1:ncol(recentered), DV_var_locations)
+  recentered[c(ID_var_locations,DV_var_locations)]
+
 }
 
 

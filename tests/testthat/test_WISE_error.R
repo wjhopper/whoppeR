@@ -13,24 +13,56 @@ ColorShape_summary <- structure(list(shape = c("Round", "Round", "Square", "Squa
 
 load("../MemoryDrug_summary.rda")
 
-test_that("WISE error calculation is accurate", {
+test_that("WISE error calculation is accurate with 1 DV", {
 
-  ColorShape_test <- WISEsummary(ColorShapes, DV = "time", withinvars = c("shape","color"),
-                       idvar = "subject")
-  mapply(function(x,y) expect_equal(round(x, 10), round(x, 10)),
-         ColorShape_test[c("time", "normed_time", "sem", "CI_lower","CI_upper")],
+  ColorShape_test <- WISEsummary(ColorShapes,
+                                 dependentvars = "time",
+                                 withinvars = c("shape", "color"),
+                                 idvar = "subject")
+
+  mapply(expect_equal,
+         ColorShape_test[c("time_mean", "time_recentered_mean", "time_sem", "time_CI_lower","time_CI_upper")],
          ColorShape_summary[c("time", "normed_time", "sem", "CI_lower","CI_upper")])
-  expect_equal(ColorShape_test$sem * sqrt(ColorShape_test$n),
+  expect_equal(ColorShape_test$time_sem * sqrt(ColorShape_test$time_n),
                ColorShape_summary$sd)
 
 
-  MemoryDrug_test <- WISEsummary(MemoryDrugs, DV = "Recall", idvar = "Subject",
+  MemoryDrug_test <- WISEsummary(MemoryDrugs,
+                                 dependentvars = "Recall",
+                                 idvar = "Subject",
                                  betweenvars = c("Gender","Dosage"),
                                  withinvars = c("Task", "Valence"))
   mapply(expect_equal,
-         MemoryDrug_test[c("Recall", "normed_Recall", "n", "sem")],
+         MemoryDrug_test[c("Recall_mean", "Recall_recentered_mean", "Recall_n", "Recall_sem")],
          MemoryDrug_summary[c("Recall", "Recall_norm", "N", "se")])
-  expect_equal((MemoryDrug_test$CI_upper - MemoryDrug_test$Recall),
+  expect_equal((MemoryDrug_test$Recall_CI_upper - MemoryDrug_test$Recall_mean),
+               MemoryDrug_summary$ci)
+
+})
+
+test_that("WISE error calculation is accurate with 2 DVs", {
+
+  set.seed(11)
+  ColorShapes$acc <- rbeta(nrow(ColorShapes), 2, 2)
+  ColorShape_test <- WISEsummary(ColorShapes,
+                                 dependentvars = c("time","acc"),
+                                 withinvars = c("shape","color"),
+                                 idvar = "subject")
+
+  mapply(expect_equal,
+         ColorShape_test[paste0("time", c("_mean", "_recentered_mean", "_sem", "_CI_lower","_CI_upper"))],
+         ColorShape_summary[c("time", "normed_time", "sem", "CI_lower","CI_upper")])
+
+  MemoryDrugs$RT <- rexp(nrow(MemoryDrugs),1)
+  MemoryDrug_test <- WISEsummary(MemoryDrugs,
+                                 dependentvars = c("Recall", "RT"),
+                                 idvar = "Subject",
+                                 betweenvars = c("Gender","Dosage"),
+                                 withinvars = c("Task", "Valence"))
+  mapply(expect_equal,
+         MemoryDrug_test[c("Recall_mean", "Recall_recentered_mean", "Recall_n", "Recall_sem")],
+         MemoryDrug_summary[c("Recall", "Recall_norm", "N", "se")])
+  expect_equal((MemoryDrug_test$Recall_CI_upper - MemoryDrug_test$Recall_mean),
                MemoryDrug_summary$ci)
 
 })
