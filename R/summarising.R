@@ -244,6 +244,9 @@ sem <- function(x, na.rm = FALSE) {
     stop('argument "x" is not a numeric or logical atomic vector')
   }
 
+  if (na.rm) {
+    x <- x[!is.na(x)]
+  }
   ## Standard error of the mean calculation
   sqrt(var(x) / length(x))
 }
