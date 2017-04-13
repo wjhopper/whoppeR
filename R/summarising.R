@@ -210,7 +210,11 @@ WISEsummary <- function(data, dependentvars, betweenvars=NULL, withinvars=NULL,
   recentered <- bind_cols(select(recentered, -contains("CI")),
                           CIbounds)
 
-  DV_var_locations <- unlist(lapply(dependentvars, grep, x = names(recentered)))
+  DV_var_locations <- unlist(lapply(paste0("^",dependentvars),
+                                    grep,
+                                    x = names(recentered)
+                                    )
+                             )
   ID_var_locations <- setdiff(1:ncol(recentered), DV_var_locations)
   recentered[c(ID_var_locations,DV_var_locations)]
 
