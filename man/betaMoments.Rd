@@ -27,4 +27,3 @@ betaMoments(alpha=.01, beta = 1)
 \author{
 Will Hopper
 }
-

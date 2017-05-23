@@ -18,4 +18,3 @@ getRandString
 \examples{
 getRandString(len = 12)
 }
-

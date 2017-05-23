@@ -21,4 +21,3 @@ Given the row  and column  of elements in an m × n matrix,
 compute the single index which can be used to access those
 elements of A (also works if r and c are vectors)
 }
-

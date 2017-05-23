@@ -22,4 +22,3 @@ as the last value in each column to indicate there are more rows not shown.
 \examples{
 prettifyTable(Orange, 9)
 }
-

@@ -19,4 +19,3 @@ Scalar numeric vector
 \description{
 Binomial Log Likelihood
 }
-

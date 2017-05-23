@@ -23,4 +23,3 @@ x <- c("zZaAG", 'AtC_Z')
 strSort(x,splitter="")
 
 }
-

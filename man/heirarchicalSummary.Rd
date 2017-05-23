@@ -35,4 +35,3 @@ derp <- heirarchicalSummary(collapse = c("subject","group"),
 str(derp)
 
 }
-

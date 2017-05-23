@@ -46,4 +46,3 @@ Inspired by functions writen by John Krushke to accompany his "Doing Bayesian Da
 Kruschke, J. K. (2015). Doing Bayesian Data Analysis, Second Edition:
 A Tutorial with R, JAGS, and Stan. Academic Press / Elsevier.
 }
-

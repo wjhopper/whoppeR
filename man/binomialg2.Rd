@@ -19,4 +19,3 @@ Scalar numeric vector
 \description{
 Likelihood ratio statistic for binomial random variable
 }
-

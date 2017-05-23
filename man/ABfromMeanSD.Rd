@@ -28,4 +28,3 @@ Beta distribution shape parameters recovered from mean and standard deviation
 John Krushke, in Kruschke, J. K. (2015). Doing Bayesian Data Analysis, Second Edition:
 A Tutorial with R, JAGS, and Stan. Academic Press / Elsevier.
 }
-

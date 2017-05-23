@@ -27,4 +27,3 @@ rank_agreements(x = c(1, 2, 3), c(3, 1, 2))
 \seealso{
 The \code{\link{rococo}} function in the \code{rococo} package.
 }
-

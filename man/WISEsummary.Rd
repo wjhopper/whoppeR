@@ -40,4 +40,3 @@ collapsed <- WISEsummary(MemoryDrugs,
                          withinvars = c("Task", "Valence"))
 
 }
-

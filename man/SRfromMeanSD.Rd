@@ -29,4 +29,3 @@ Gamma distribution shape and rate parameters recovered fromm mean and sd
 John Krushke, in Kruschke, J. K. (2015). Doing Bayesian Data Analysis, Second Edition:
 A Tutorial with R, JAGS, and Stan. Academic Press / Elsevier.
 }
-

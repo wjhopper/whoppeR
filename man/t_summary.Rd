@@ -33,4 +33,3 @@ results in format suitable for including in a matrix, data frame or table
 \author{
 Will Hopper
 }
-

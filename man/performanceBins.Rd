@@ -30,4 +30,3 @@ performanceBins(bin_by = "subject",
                 acc=mean(final_score))
 
 }
-
