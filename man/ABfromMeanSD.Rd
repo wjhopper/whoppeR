@@ -2,8 +2,7 @@
 % Please edit documentation in R/stats.R
 \name{ABfromMeanSD}
 \alias{ABfromMeanSD}
-\title{ABfromMeanSD
-Beta distribution shape parameters recovered from mean and standard deviation}
+\title{ABfromMeanSD}
 \usage{
 ABfromMeanSD(mean, sd)
 }
@@ -18,7 +17,6 @@ a = Beta shape parameter #1,
 b = Beta shape parameter #2
 }
 \description{
-ABfromMeanSD
 Beta distribution shape parameters recovered from mean and standard deviation
 }
 \examples{

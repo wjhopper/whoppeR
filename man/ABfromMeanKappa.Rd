@@ -2,8 +2,7 @@
 % Please edit documentation in R/stats.R
 \name{ABfromMeanKappa}
 \alias{ABfromMeanKappa}
-\title{ABfromMeanKappa
-Beta distribution shape parameters recovered from mean and concentration:}
+\title{ABfromMeanKappa}
 \usage{
 ABfromMeanKappa(mean, kappa)
 }
@@ -18,7 +17,6 @@ a = Beta shape parameter #1,
 b = Beta shape parameter #2
 }
 \description{
-ABfromMeanKappa
 Beta distribution shape parameters recovered from mean and concentration:
 }
 \examples{

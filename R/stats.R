@@ -116,7 +116,7 @@ betaParams = function( mean, mode, kappa, sd ) {
 }
 
 #' ABfromModeKappa
-#' Beta distribution shape parameters recovered from mode and concentration:
+#' @description Beta distribution shape parameters recovered from mode and concentration:
 #' @param mode numeric scalar in range (0,1)
 #' @param kappa numeric scalar in range (0,Inf)
 #'
@@ -138,7 +138,7 @@ ABfromModeKappa = function( mode , kappa ) {
 }
 
 #' ABfromMeanSD
-#' Beta distribution shape parameters recovered from mean and standard deviation
+#' @description Beta distribution shape parameters recovered from mean and standard deviation
 #' @param mean numeric scalar in range (0,1)
 #' @param sd numeric scalar in range (0,Inf)
 #'
@@ -164,7 +164,7 @@ ABfromMeanSD = function( mean , sd ) {
 }
 
 #' ABfromMeanKappa
-#' Beta distribution shape parameters recovered from mean and concentration:
+#' @description Beta distribution shape parameters recovered from mean and concentration:
 #' @param mode numeric scalar in range (0,1)
 #' @param kappa numeric scalar in range (0,Inf)
 #'

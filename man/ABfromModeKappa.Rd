@@ -2,8 +2,7 @@
 % Please edit documentation in R/stats.R
 \name{ABfromModeKappa}
 \alias{ABfromModeKappa}
-\title{ABfromModeKappa
-Beta distribution shape parameters recovered from mode and concentration:}
+\title{ABfromModeKappa}
 \usage{
 ABfromModeKappa(mode, kappa)
 }
@@ -18,7 +17,6 @@ a = Beta shape parameter #1,
 b = Beta shape parameter #2
 }
 \description{
-ABfromModeKappa
 Beta distribution shape parameters recovered from mode and concentration:
 }
 \examples{
