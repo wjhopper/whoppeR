@@ -4,6 +4,11 @@
 #' re-run all the code interactively.
 #'
 #' @param path The path to the knitr cache directory.
+#' @param load_packages A logical scalar controlling whether the packages loaded when the document was knit
+#' should be loaded now. Defaults to \code{TRUE}, which loads the packages.
+#' @param eval_promises A logical scalar controlling whether the cached objects are loaded as promises,
+#' (as created by \link{lazyLoad}) or whether the promises are evaluated. Defaults to \code{TRUE}, which
+#' evaluates promises. This may be a slow process if there are many large cached objects.
 #' @param envir The environment to load the cached objects and packges into.
 #' Defaults to the current calling environment
 #'
@@ -15,15 +20,14 @@
 #' `$DOCUMENTNAME$_cache/$OUTPUTFORMAT$/`. So, if your document named "Analysis.Rmd" was knit to HTML
 #' and cached, then the cache would be stored at `Analysis_cache/html/`.
 #'
-#' The cached objects are loaded as promises.
-#'
 #' @examples
 #' \dontrun{
 #' load_knitr_cache("Analysis_cache/html")
 #' }
-load_knitr_cache <- function(path, envir = parent.frame()){
+load_knitr_cache <- function(path, eval_promises = TRUE, load_packges = TRUE,
+                             envir = parent.frame()) {
 
-  if (file.exists("__packages")) {
+  if (file.exists("__packages") && load_packages) {
     packages <- readLines(con = "__packages")
     for (p in packages) {
       library(p, character.only = TRUE)
@@ -34,6 +38,10 @@ load_knitr_cache <- function(path, envir = parent.frame()){
                       )
   for (cache in cache_names) {
     lazyLoad(cache, envir)
+  }
+
+  if (eval_promises) {
+    sapply(ls(envir), get)
   }
 
   return(invisible())

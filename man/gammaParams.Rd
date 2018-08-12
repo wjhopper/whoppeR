@@ -33,7 +33,7 @@ relating to the distributions central tendency (i.e. mean or mode) must be speci
 the standard deviation.
 }
 \examples{
-gammaParams(mean = .1.5, sd = 3)
+gammaParams(mean = 1.5, sd = 3)
 gammaParams(mode = 2, sd = 3)
 
 # Throws an error, because mean and mode cannot be used to find the shape and rate.

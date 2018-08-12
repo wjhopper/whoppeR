@@ -4,13 +4,21 @@
 \alias{load_knitr_cache}
 \title{Load Knitr Cache}
 \usage{
-load_knitr_cache(path, envir = parent.frame())
+load_knitr_cache(path, eval_promises = TRUE, load_packges = TRUE,
+  envir = parent.frame())
 }
 \arguments{
 \item{path}{The path to the knitr cache directory.}
 
+\item{eval_promises}{A logical scalar controlling whether the cached objects are loaded as promises,
+(as created by \link{lazyLoad}) or whether the promises are evaluated. Defaults to \code{TRUE}, which
+evaluates promises. This may be a slow process if there are many large cached objects.}
+
 \item{envir}{The environment to load the cached objects and packges into.
 Defaults to the current calling environment}
+
+\item{load_packages}{A logical scalar controlling whether the packages loaded when the document was knit
+should be loaded now. Defaults to \code{TRUE}, which loads the packages.}
 }
 \value{
 Returns `NULL` invisibly
@@ -24,8 +32,6 @@ re-run all the code interactively.
 The knitr cache directory is usually stored in the same directory as the document. The knitr cache directory naming schema is
 `$DOCUMENTNAME$_cache/$OUTPUTFORMAT$/`. So, if your document named "Analysis.Rmd" was knit to HTML
 and cached, then the cache would be stored at `Analysis_cache/html/`.
-
-The cached objects are loaded as promises.
 }
 \examples{
 \dontrun{
