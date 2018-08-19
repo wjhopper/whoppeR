@@ -24,11 +24,12 @@
 #' \dontrun{
 #' load_knitr_cache("Analysis_cache/html")
 #' }
-load_knitr_cache <- function(path, eval_promises = TRUE, load_packges = TRUE,
+load_knitr_cache <- function(path, eval_promises = TRUE, load_packages = TRUE,
                              envir = parent.frame()) {
 
-  if (file.exists("__packages") && load_packages) {
-    packages <- readLines(con = "__packages")
+  packages_file <- file.path(path, "__packages")
+  if (file.exists(packages_file) && load_packages) {
+    packages <- readLines(con = packages_file)
     for (p in packages) {
       library(p, character.only = TRUE)
     }
