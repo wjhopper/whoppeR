@@ -4,8 +4,15 @@
 \alias{WISEsummary}
 \title{WISEsummmary}
 \usage{
-WISEsummary(data, dependentvars, betweenvars = NULL, withinvars = NULL,
-  idvar = NULL, CI_width = 0.95, na.rm = FALSE)
+WISEsummary(
+  data,
+  dependentvars,
+  betweenvars = NULL,
+  withinvars = NULL,
+  idvar = NULL,
+  CI_width = 0.95,
+  na.rm = FALSE
+)
 }
 \arguments{
 \item{data}{A data frame}
@@ -38,5 +45,6 @@ collapsed <- WISEsummary(MemoryDrugs,
                          idvar = "Subject",
                          betweenvars = c("Gender", "Dosage"),
                          withinvars = c("Task", "Valence"))
+
 
 }
