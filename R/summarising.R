@@ -104,10 +104,10 @@ performanceBins <- function(data, bin_by,
 #' Within-subject Error Summary
 #'
 #' @param data A data frame
-#' @param dependentvars Character vector giving the dependent variable
-#' @param betweenvars Character vector giving the between subject variables
-#' @param withinvars Character vector giving the within subject variables
-#' @param idvar Character vector giving the name of the column holding subject
+#' @param dependentvars Vector of unquoted expressions giving the dependent variable
+#' @param betweenvars Vector of unquoted expressions giving the between subject variables
+#' @param withinvars Vector of unquoted expressions giving the within subject variables
+#' @param idvar Vector of unquoted expressions giving the name of the column holding subject
 #' identifiers
 #' @param CI_width Numeric vector giving the confidence level for computing the
 #' confidence interval boundaries. Must be between 0 and 1, non-inclusive.
@@ -116,11 +116,7 @@ performanceBins <- function(data, bin_by,
 #' @return A data frame
 #' @export
 #'
-#' @import dplyr
-#' @importFrom tidyr gather_
-#' @importFrom tidyr spread_
-#' @importFrom magrittr %<>%
-#' @importFrom lazyeval interp
+#' @importFrom rlang .data
 #'
 #' @examples
 #' library(whoppeR)
@@ -131,6 +127,7 @@ performanceBins <- function(data, bin_by,
 #'                          betweenvars = c("Gender", "Dosage"),
 #'                          withinvars = c("Task", "Valence"))
 #'
+#'
 WISEsummary <- function(data, dependentvars, betweenvars=NULL, withinvars=NULL,
                         idvar=NULL, CI_width=.95, na.rm=FALSE) {
 
@@ -138,8 +135,8 @@ WISEsummary <- function(data, dependentvars, betweenvars=NULL, withinvars=NULL,
   # of the between subject condition they are in
   #
   # To do this, we get each subject's mean, join it with the raw data,
-  # then center the obsevations from each subject around the grand mean
-  # by subtracting off the indvidual mean for each subject, and then add
+  # then center the observations from each subject around the grand mean
+  # by subtracting off the individual mean for each subject, and then add
   # the grand mean
   #
   # Then we use this re-centered data as the new "raw" data, to calculate
@@ -152,71 +149,49 @@ WISEsummary <- function(data, dependentvars, betweenvars=NULL, withinvars=NULL,
 
   # Get the averages in each condition (grouping by within and between variables,
   # ignoring the subjects. Standard 'unnormed' means.
-  cell_means <- group_by_(data,.dots =  c(betweenvars, withinvars))
-  cell_means <- summarise_at(cell_means, dependentvars, funs(mean = mean), na.rm = na.rm)
-  cell_means <- ungroup(cell_means)
-  if (length(dependentvars) == 1) {
-    names(cell_means)[ncol(cell_means)] %<>% paste(dependentvars, ., sep="_")
-  }
 
-  data <- gather_(data, "DV", "value", dependentvars, na.rm = na.rm)
-  data <- group_by_(data, .dots = c("DV", idvar))
-  recentered <- summarise_at(data, "value", funs(subject_avg = mean))
-  recentered <- left_join(x = data,
-                          y = recentered,
-                          by = c(idvar,"DV"))
-  recentered <- group_by(recentered, DV)
-  recentered <- mutate(recentered,
-                       recentered_value = value - subject_avg + mean(value))
-  recentered <- group_by_(recentered, .dots =  c("DV", betweenvars, withinvars))
-  recentered <- summarise_at(recentered, "recentered_value",
-                             funs(recentered_mean = mean, sem, n())
-                             )
-  recentered <- ungroup(recentered)
+  by_dv <- data %>%
+    tidyr::pivot_longer(cols = {{dependentvars}}, names_to = "DV")
 
-  # Apply correction from Morey (2008) to the standard error
-  # Get the product of the number of conditions of within-subject variables
-  nCells <- nrow(distinct_(cell_means, .dots = withinvars))
-  correction <- sqrt((nCells/(nCells - 1)))
+  cell_means <- by_dv %>%
+    dplyr::group_by(.data$DV, dplyr::across({{betweenvars}}), dplyr::across({{withinvars}})) %>%
+    dplyr::summarise(
+      dplyr::across(
+        .data$value,
+        .fns = ~mean(.x, na.rm = na.rm),
+        .names = "mean"),
+      .groups = "drop")
 
-  # Apply the correction factor to the SEM estimate
-  recentered$sem <- recentered$sem * correction
+  nCells <- nrow(dplyr::distinct(cell_means, dplyr::across({{withinvars}})))
+  correction <- if(nCells > 1) sqrt((nCells/(nCells - 1))) else 1
 
-  # Calculate CI upper and lower bounds
-  recentered <- mutate(recentered,
-                       CI = qt((1-CI_width)/2, df = n-1, lower.tail = FALSE)*sem)
+  recentered <- by_dv %>%
+    dplyr::group_by(.data$DV, dplyr::across({{idvar}})) %>%
+    dplyr::mutate(subject_avg = mean(.data$value)) %>%
+    dplyr::group_by(.data$DV) %>%
+    dplyr::mutate(recentered_value = .data$value - .data$subject_avg + mean(.data$value)) %>%
+    dplyr::group_by(.data$DV, dplyr::across({{withinvars}}), dplyr::across({{betweenvars}})) %>%
+    dplyr::summarise(
+      dplyr::across(
+        .data$recentered_value,
+        .fns = list(recentered_mean = mean, sem = sem, n = length),
+        .names = "{.fn}"),
+      .groups = "drop")
 
-  # Put the recentered data back into its original form, with a different column
-  # for eaech DV
-  each_DV <- split(recentered, recentered$DV)
-  new_vars <- c("recentered_mean","sem","n","CI")
-  each_DV <- lapply(each_DV,
-                    function(d) {
-                      names(d)[names(d) %in% new_vars] <- paste(d$DV[1], new_vars, sep="_")
-                      select(d, -DV)
-                      }
-                    )
-  recentered <- Reduce(function(x,y) full_join(x,y, by=c(betweenvars, withinvars)),
-                       c(list(cell_means),each_DV))
+  by_cols <- names(cell_means)
+  by_cols <- by_cols[!by_cols == "mean"]
 
-  CIbounds <- lapply(list(CI_upper=`+`, CI_lower=`-`),
-                     Map,
-                     recentered[paste0(dependentvars, "_mean")],
-                     recentered[paste0(dependentvars, "_CI")]
-                     )
-  CIbounds <- unlist(CIbounds, recursive = FALSE)
-  names(CIbounds) <- sapply(strsplit(names(CIbounds), "\\."),
-                            function(x) sub("_mean","", paste(rev(x),collapse = "_")))
-  recentered <- bind_cols(select(recentered, -contains("CI")),
-                          CIbounds)
-
-  DV_var_locations <- unlist(lapply(paste0("^",dependentvars),
-                                    grep,
-                                    x = names(recentered)
-                                    )
-                             )
-  ID_var_locations <- setdiff(1:ncol(recentered), DV_var_locations)
-  recentered[c(ID_var_locations,DV_var_locations)]
+  dplyr::left_join(cell_means, recentered, by = by_cols) %>%
+    dplyr::mutate(
+      sem = .data$sem * correction,
+      CI = stats::qt((1 - CI_width)/2, df = .data$n-1, lower.tail = FALSE) * .data$sem,
+      CI_lower = .data$mean - .data$CI,
+      CI_upper = .data$mean + .data$CI) %>%
+    dplyr::select(-.data$CI) %>%
+    tidyr::pivot_wider(
+      names_from = .data$DV,
+      values_from = c(.data$mean, .data$recentered_mean, .data$sem, .data$n, .data$CI_lower, .data$CI_upper),
+      names_glue = "{DV}_{.value}")
 
 }
 

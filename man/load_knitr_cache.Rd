@@ -4,8 +4,12 @@
 \alias{load_knitr_cache}
 \title{Load Knitr Cache}
 \usage{
-load_knitr_cache(path, eval_promises = TRUE, load_packges = TRUE,
-  envir = parent.frame())
+load_knitr_cache(
+  path,
+  eval_promises = TRUE,
+  load_packages = TRUE,
+  envir = parent.frame()
+)
 }
 \arguments{
 \item{path}{The path to the knitr cache directory.}
@@ -14,11 +18,11 @@ load_knitr_cache(path, eval_promises = TRUE, load_packges = TRUE,
 (as created by \link{lazyLoad}) or whether the promises are evaluated. Defaults to \code{TRUE}, which
 evaluates promises. This may be a slow process if there are many large cached objects.}
 
-\item{envir}{The environment to load the cached objects and packges into.
-Defaults to the current calling environment}
-
 \item{load_packages}{A logical scalar controlling whether the packages loaded when the document was knit
 should be loaded now. Defaults to \code{TRUE}, which loads the packages.}
+
+\item{envir}{The environment to load the cached objects and packges into.
+Defaults to the current calling environment}
 }
 \value{
 Returns `NULL` invisibly
