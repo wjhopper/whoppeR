@@ -17,13 +17,13 @@ WISEsummary(
 \arguments{
 \item{data}{A data frame}
 
-\item{dependentvars}{Character vector giving the dependent variable}
+\item{dependentvars}{Vector of unquoted expressions giving the dependent variable}
 
-\item{betweenvars}{Character vector giving the between subject variables}
+\item{betweenvars}{Vector of unquoted expressions giving the between subject variables}
 
-\item{withinvars}{Character vector giving the within subject variables}
+\item{withinvars}{Vector of unquoted expressions giving the within subject variables}
 
-\item{idvar}{Character vector giving the name of the column holding subject
+\item{idvar}{Vector of unquoted expressions giving the name of the column holding subject
 identifiers}
 
 \item{CI_width}{Numeric vector giving the confidence level for computing the

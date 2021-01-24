@@ -104,10 +104,10 @@ performanceBins <- function(data, bin_by,
 #' Within-subject Error Summary
 #'
 #' @param data A data frame
-#' @param dependentvars Character vector giving the dependent variable
-#' @param betweenvars Character vector giving the between subject variables
-#' @param withinvars Character vector giving the within subject variables
-#' @param idvar Character vector giving the name of the column holding subject
+#' @param dependentvars Vector of unquoted expressions giving the dependent variable
+#' @param betweenvars Vector of unquoted expressions giving the between subject variables
+#' @param withinvars Vector of unquoted expressions giving the within subject variables
+#' @param idvar Vector of unquoted expressions giving the name of the column holding subject
 #' identifiers
 #' @param CI_width Numeric vector giving the confidence level for computing the
 #' confidence interval boundaries. Must be between 0 and 1, non-inclusive.
