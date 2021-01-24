@@ -163,7 +163,7 @@ WISEsummary <- function(data, dependentvars, betweenvars=NULL, withinvars=NULL,
       .groups = "drop")
 
   nCells <- nrow(dplyr::distinct(cell_means, dplyr::across({{withinvars}})))
-  correction <- sqrt((nCells/(nCells - 1)))
+  correction <- if(nCells > 1) sqrt((nCells/(nCells - 1))) else 1
 
   recentered <- by_dv %>%
     dplyr::group_by(.data$DV, dplyr::across({{idvar}})) %>%
@@ -178,8 +178,10 @@ WISEsummary <- function(data, dependentvars, betweenvars=NULL, withinvars=NULL,
         .names = "{.fn}"),
       .groups = "drop")
 
+  by_cols <- names(cell_means)
+  by_cols <- by_cols[!by_cols == "mean"]
 
-  dplyr::left_join(cell_means, recentered) %>%
+  dplyr::left_join(cell_means, recentered, by = by_cols) %>%
     dplyr::mutate(
       sem = .data$sem * correction,
       CI = stats::qt((1 - CI_width)/2, df = .data$n-1, lower.tail = FALSE) * .data$sem,
@@ -189,8 +191,7 @@ WISEsummary <- function(data, dependentvars, betweenvars=NULL, withinvars=NULL,
     tidyr::pivot_wider(
       names_from = .data$DV,
       values_from = c(.data$mean, .data$recentered_mean, .data$sem, .data$n, .data$CI_lower, .data$CI_upper),
-      names_glue = "{DV}_{.value}") %>%
-    suppressMessages()
+      names_glue = "{DV}_{.value}")
 
 }
 
